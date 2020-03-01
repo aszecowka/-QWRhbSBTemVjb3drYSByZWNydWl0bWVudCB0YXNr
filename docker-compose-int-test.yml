@@ -1,0 +1,25 @@
+version: '3'
+services:
+  integration-test:
+    build:
+      dockerfile: Dockerfile-integration-test
+      context: .
+    depends_on:
+    - server
+    environment:
+      BULK_API_URL: http://server:8080
+      REDIS_ADDRESS: redis:6379
+  server:
+    build: .
+    depends_on:
+    - redis
+    ports:
+    - 8080:8080
+    environment:
+      APP_WEATHERAPI_KEY: ${API_KEY}
+      APP_CACHE_ADDRESS: redis:6379
+  redis:
+    image: redis:latest
+    ports:
+    - 6379:6379
+
