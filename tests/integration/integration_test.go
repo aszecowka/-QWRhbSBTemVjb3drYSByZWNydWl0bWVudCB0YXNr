@@ -27,6 +27,7 @@ func TestIntegration(t *testing.T) {
 		err = resp.Body.Close()
 		require.NoError(t, err)
 	}()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	out := map[string]*weather.OpenWeatherResponse{}
 

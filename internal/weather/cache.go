@@ -49,7 +49,7 @@ func (c *redisCache) Set(ctx context.Context, queriedCity string, weather OpenWe
 }
 
 func (c *redisCache) getCityID(city string) (int, error) {
-	id, err := c.redisCli.Get(c.keyForCityNameToID(city)).Int()
+	id, err := c.redisCli.Get(c.keyCityToID(city)).Int()
 	switch {
 	case err == redis.Nil:
 		return -1, NotFoundError
@@ -60,7 +60,7 @@ func (c *redisCache) getCityID(city string) (int, error) {
 }
 
 func (c *redisCache) getWeather(cityID int) (OpenWeatherResponse, error) {
-	asJSON, err := c.redisCli.Get(c.keyForWeather(cityID)).Result()
+	asJSON, err := c.redisCli.Get(c.keyIDToWeather(cityID)).Result()
 	switch {
 	case err == redis.Nil:
 		return OpenWeatherResponse{}, NotFoundError
@@ -76,7 +76,7 @@ func (c *redisCache) getWeather(cityID int) (OpenWeatherResponse, error) {
 }
 
 func (c *redisCache) storeCityID(cityID int, queriedCity string) error {
-	if _, err := c.redisCli.SetNX(c.keyForCityNameToID(queriedCity), cityID, 0).Result(); err != nil {
+	if _, err := c.redisCli.SetNX(c.keyCityToID(queriedCity), cityID, 0).Result(); err != nil {
 		return fmt.Errorf("while storing mapping city to ID: %w", err)
 	}
 	return nil
@@ -88,18 +88,18 @@ func (c *redisCache) storeWeather(weather OpenWeatherResponse) error {
 		return fmt.Errorf("while marshaling weather object: %w", err)
 	}
 
-	_, err = c.redisCli.Set(c.keyForWeather(weather.ID), string(b), c.ttl).Result()
+	_, err = c.redisCli.Set(c.keyIDToWeather(weather.ID), string(b), c.ttl).Result()
 	if err != nil {
 		return fmt.Errorf("while storing weather object: %w", err)
 	}
 	return nil
 }
 
-func (c *redisCache) keyForWeather(cityID int) string {
+func (c *redisCache) keyIDToWeather(cityID int) string {
 	return fmt.Sprintf("weatherByCityID:%d", cityID)
 }
 
-func (c *redisCache) keyForCityNameToID(cityName string) string {
+func (c *redisCache) keyCityToID(cityName string) string {
 	return fmt.Sprintf("cityNameToID:%s", strings.ToLower(cityName))
 }
 

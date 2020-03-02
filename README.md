@@ -41,7 +41,9 @@ make run-int-test
 ## Proposed solution
 - API
 There is one handler, that accepts GET requests and requires `city` query parameter:
-```curl -v -X GET "http://localhost:8080/?city=Katowice&city=Gliwice&city=DoesNotExist"```
+```
+curl -v -X GET "http://localhost:8080/?city=Katowice&city=Gliwice&city=DoesNotExist"
+```
 
 The `city` query parameter can be defined many times. The response is a map, where the key is a requested city, and value is a response from OpenWeatherMap service.
 In case, that city does not exist, value is set to null.
@@ -77,6 +79,7 @@ In case, that city does not exist, value is set to null.
   "DoesNotExist": null
 }
 ```
+
 - Redis is used for caching responses. Environment variable `APP_CACHE_TTL` defines how long responses are cached.
 - There can be a different requests for the same city:
 ```
@@ -84,3 +87,10 @@ api.openweathermap.org/data/2.5/weather?q=London
 api.openweathermap.org/data/2.5/weather?q=London,uk
 ```
 Thanks to the collection `cityNameToID` stored in the Redis, requests for `London` and `London,uk` will use the same cached value.
+
+## Next steps
+
+Below you can find a list of possible improvements:
+- provide Open API Specification
+- add metrics to detect how often cache miss happens. This can be useful for adjusting **APP_CACHE_TTL** parameter.
+- protect from malicious users who bypass cache by requesting data for non-existing cities

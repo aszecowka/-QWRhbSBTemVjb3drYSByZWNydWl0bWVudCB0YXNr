@@ -16,3 +16,4 @@ COPY --from=builder /go/bin/int-test /app/int-test
 USER 100
 
 ENTRYPOINT ["/app/int-test"]
+CMD ["-test.v"]

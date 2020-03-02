@@ -22,13 +22,12 @@ run:
 
 .PHONY: run-with-deps
 run-with-deps:
-	docker-compose build server
-	docker-compose up
+	docker-compose up --build
 
 .PHONY: run-int-test
 run-int-test:
-	docker-compose -f docker-compose-int-test.yml build server integration-test
-	docker-compose -f docker-compose-int-test.yml up integration-test
+	docker-compose -f docker-compose-int-test.yml up --build --abort-on-container-exit --exit-code-from integration-test integration-test
+	docker-compose down
 
 .PHONY: build-docker
 build-docker:

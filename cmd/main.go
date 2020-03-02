@@ -31,6 +31,7 @@ func main() {
 	svc := weather.NewService(cache, client)
 	h := weather.NewHandler(svc, log)
 
+	http.Handle("/weather", h)
 	log.Info("Starting server...")
 	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), h)
 	if err != nil {

@@ -17,7 +17,6 @@ func (_m *RedisClient) OnSetReturnsError(key string, returnedError error) {
 	_m.On("Set", key, mock.Anything, mock.Anything).Return(&cmd).Once()
 }
 
-//SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd
 func (_m *RedisClient) OnSetNXReturnsError(key string, returnedError error) {
 	cmd := redis.BoolCmd{}
 	cmd.SetErr(returnedError)
