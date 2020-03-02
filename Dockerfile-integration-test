@@ -1,0 +1,19 @@
+FROM golang:1.13.5-alpine3.10 as builder
+
+RUN mkdir build
+WORKDIR build
+COPY go.mod .
+COPY go.sum .
+
+
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go test -tags=integration -c -o /go/bin/int-test ./tests/integration
+
+FROM alpine:3.10
+
+COPY --from=builder /go/bin/int-test /app/int-test
+USER 100
+
+ENTRYPOINT ["/app/int-test"]
+CMD ["-test.v"]
