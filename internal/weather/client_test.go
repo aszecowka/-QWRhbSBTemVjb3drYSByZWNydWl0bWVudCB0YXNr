@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/aszecowka/QWRhbSBTemVjb3drYSByZWNydWl0bWVudCB0YXNr/internal/weather"
 	"github.com/aszecowka/QWRhbSBTemVjb3drYSByZWNydWl0bWVudCB0YXNr/internal/weather/automock"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -17,6 +18,8 @@ func TestClient(t *testing.T) {
 
 	givenTimeout := time.Second
 	ctx := context.Background()
+	log, _ := test.NewNullLogger()
+
 	t.Run("Success", func(t *testing.T) {
 		// GIVEN
 		testServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -31,7 +34,7 @@ func TestClient(t *testing.T) {
 
 		}))
 		defer testServer.Close()
-		sut := weather.NewClient(http.DefaultClient, testServer.URL, fixAPIKey(), givenTimeout)
+		sut := weather.NewClient(http.DefaultClient, log, testServer.URL, fixAPIKey(), givenTimeout)
 		// WHEN
 		actualResponse, err := sut.Get(ctx, "Paris")
 		// THEN
@@ -43,7 +46,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		mockHTTP := automock.NewClientThatReturnsNotFoundStatusCode()
 		defer mockHTTP.AssertExpectations(t)
-		sut := weather.NewClient(mockHTTP, "", "", givenTimeout)
+		sut := weather.NewClient(mockHTTP, log, "", "", givenTimeout)
 		// WHEN
 		_, err := sut.Get(ctx, "Paris")
 		// THEN
@@ -54,7 +57,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		mockHTTP := automock.NewClientThatReturnsWrongStatusCode()
 		defer mockHTTP.AssertExpectations(t)
-		sut := weather.NewClient(mockHTTP, "", "", givenTimeout)
+		sut := weather.NewClient(mockHTTP, log, "", "", givenTimeout)
 		// WHEN
 		_, err := sut.Get(ctx, "Paris")
 		// THEN
@@ -65,7 +68,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		mockHTTP := automock.NewClientThatReturnsError()
 		defer mockHTTP.AssertExpectations(t)
-		sut := weather.NewClient(mockHTTP, "", "", givenTimeout)
+		sut := weather.NewClient(mockHTTP, log, "", "", givenTimeout)
 		// WHEN
 		_, err := sut.Get(ctx, "Paris")
 		// THEN
@@ -76,7 +79,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		mockHTTP := automock.NewClientThatReturnsErrorOnClosingBody(http.StatusOK)
 		defer mockHTTP.AssertExpectations(t)
-		sut := weather.NewClient(mockHTTP, "", "", givenTimeout)
+		sut := weather.NewClient(mockHTTP, log, "", "", givenTimeout)
 		// WHEN
 		_, err := sut.Get(ctx, "Paris")
 		// THEN
@@ -88,7 +91,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		mockHTTP := automock.NewClientThatReturnsErrorOnClosingBody(http.StatusInternalServerError)
 		defer mockHTTP.AssertExpectations(t)
-		sut := weather.NewClient(mockHTTP, "", "", givenTimeout)
+		sut := weather.NewClient(mockHTTP, log, "", "", givenTimeout)
 
 		// WHEN
 		_, err := sut.Get(ctx, "Paris")
@@ -100,7 +103,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		mockHTTP := automock.NewClientThatChecksIfRequestHasDefinedDeadline(http.StatusOK)
 		defer mockHTTP.AssertExpectations(t)
-		sut := weather.NewClient(mockHTTP, "", "", givenTimeout)
+		sut := weather.NewClient(mockHTTP, log, "", "", givenTimeout)
 
 		// WHEN
 		_, err := sut.Get(ctx, "Paris")
@@ -113,7 +116,7 @@ func TestClient(t *testing.T) {
 		// GIVEN
 		cancelledCtx, cancel := context.WithCancel(context.Background())
 		cancel()
-		sut := weather.NewClient(nil, "", "", givenTimeout)
+		sut := weather.NewClient(nil, log, "", "", givenTimeout)
 
 		// WHEN
 		_, err := sut.Get(cancelledCtx, "Paris")

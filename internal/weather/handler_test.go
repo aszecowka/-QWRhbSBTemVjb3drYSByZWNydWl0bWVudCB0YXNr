@@ -2,7 +2,6 @@ package weather_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/aszecowka/QWRhbSBTemVjb3drYSByZWNydWl0bWVudCB0YXNr/internal/weather"
 	"github.com/aszecowka/QWRhbSBTemVjb3drYSByZWNydWl0bWVudCB0YXNr/internal/weather/automock"
 	"github.com/pkg/errors"
@@ -80,7 +79,6 @@ func TestHandler(t *testing.T) {
 		mockGetter := &automock.BulkGetter{}
 		defer mockGetter.AssertExpectations(t)
 		log, logHook := test.NewNullLogger()
-		fmt.Println(logHook.Levels())
 
 		mockGetter.On("GetWeatherForCities", mock.Anything, []string{"London"}).Return(nil, errors.New("some error"))
 		sut := weather.NewHandler(mockGetter, log)

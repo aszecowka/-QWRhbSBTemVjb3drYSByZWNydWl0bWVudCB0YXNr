@@ -24,11 +24,11 @@ func main() {
 	if _, err := redisCli.Ping().Result(); err != nil {
 		panic(err)
 	}
+	log := logrus.StandardLogger()
 
 	cache := weather.NewCache(redisCli, cfg.Cache.TTL)
-	client := weather.NewClient(http.DefaultClient, cfg.WeatherAPI.URL, cfg.WeatherAPI.Key, cfg.WeatherAPI.Timeout)
+	client := weather.NewClient(http.DefaultClient, log, cfg.WeatherAPI.URL, cfg.WeatherAPI.Key, cfg.WeatherAPI.Timeout)
 	svc := weather.NewService(cache, client)
-	log := logrus.StandardLogger()
 	h := weather.NewHandler(svc, log)
 
 	log.Info("Starting server...")

@@ -49,7 +49,6 @@ type Sys struct {
 	Sunset  int     `json:"sunset"`
 }
 
-//
 type BadRequestResponse struct {
 	Message string `json:"message"`
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,12 +17,13 @@ type HTTPClient interface {
 	Do(r *http.Request) (*http.Response, error)
 }
 
-func NewClient(httpClient HTTPClient, baseURL string, apiKey string, reqTimeout time.Duration) *restClient {
+func NewClient(httpClient HTTPClient, log logrus.FieldLogger, baseURL string, apiKey string, reqTimeout time.Duration) *restClient {
 	return &restClient{
 		httpClient:     httpClient,
 		baseURL:        baseURL,
 		apiKey:         apiKey,
 		requestTimeout: reqTimeout,
+		log:            log.WithField("service", "openweathermap-client"),
 	}
 }
 
@@ -30,6 +32,7 @@ type restClient struct {
 	apiKey         string
 	requestTimeout time.Duration
 	httpClient     HTTPClient
+	log            logrus.FieldLogger
 }
 
 func (c *restClient) Get(ctx context.Context, city string) (_ OpenWeatherResponse, err error) {
@@ -74,7 +77,7 @@ func (c *restClient) Get(ctx context.Context, city string) (_ OpenWeatherRespons
 	if err := json.NewDecoder(resp.Body).Decode(&fetchResponse); err != nil {
 		return OpenWeatherResponse{}, errors.Wrap(err, "while decoding response")
 	}
-
+	c.log.Infof("Successfully fetched data for city: [%s]", city) // only to show when cache is used
 	return fetchResponse, nil
 
 }

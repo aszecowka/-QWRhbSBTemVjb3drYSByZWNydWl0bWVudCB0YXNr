@@ -1,5 +1,9 @@
 APP_NAME = "bulk-fetcher"
 
+.PHONY: build
+build: tests
+	go build -o ${APP_NAME} ./cmd/main.go
+
 .PHONY: validate
 validate:
 	go mod tidy -v
@@ -11,10 +15,6 @@ validate:
 .PHONY: tests
 tests: validate
 	go test ./...
-
-.PHONY: build
-build: tests
-	go build -o ${APP_NAME} ./cmd/main.go
 
 .PHONY: run
 run:
